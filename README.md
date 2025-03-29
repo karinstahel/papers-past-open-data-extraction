@@ -1,4 +1,4 @@
-# Papers Past METS/ALTO Data Extraction Tool
+# Papers Past Open Data METS/ALTO extraction script
 
 This Python script extracts article data from METS/ALTO files in Papers Past open data tar.gz files using multiprocessing. The tool processes newspaper archives and saves extracted article data by newspaper issue in parquet format with detailed error and completion logging.
 
@@ -118,9 +118,13 @@ output_directory/
 
 Each parquet file contains extracted article data for a single newspaper issue, and the summary JSON file contains statistics and details about the processing run.
 
-## License
+## Acknowledgements
 
-This code is adapted from work by Joshua Wilson Black (2023). See https://doi.org/10.1093/llc/fqac079
+This code is adapted from work by [Joshua Wilson Black](https://github.com/JoshuaWilsonBlack/newspaper-philosophy-methods)
+
+Wilson Black, J. (2023). Creating specialized corpora from digitized historical newspaper archives: An iterative bootstrapping approach. *Digital Scholarship in the Humanities, 38*(2), 779–797. [https://doi.org/10.1093/llc/fqac079](https://doi.org/10.1093/llc/fqac079)
+
+
 
 ## Author
 
