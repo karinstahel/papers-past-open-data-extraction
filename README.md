@@ -1,4 +1,4 @@
-# Papers Past Open Data METS/ALTO extraction script
+# Papers Past open data METS/ALTO extraction script
 
 This Python script uses multiprocessing to effciently extract article data from METS/ALTO XML (in tar.gz files) in the [National Library of New Zealand's Papers Past open data](https://natlib.govt.nz/about-us/open-data/papers-past-metadata/papers-past-newspaper-open-data-pilot/overview-papers-past-newspaper-open-data-pilot). The script processes the archive files and saves extracted article data by newspaper issue as pandas dataframes in parquet format with detailed error and completion logging. Each row in the dataframe is an article in that newspaper issue.
 
@@ -12,15 +12,15 @@ This Python script uses multiprocessing to effciently extract article data from 
 
 ## Usage
 
-Run this script from the command line using Python. The tool offers multiple ways to specify which newspaper issues to process, including individual issue codes, lists in text files, or newspaper-year combinations.
+Run this script from the command line using Python. As shown below, there are multiple ways to specify which newspaper issues to process, including individual issue codes, lists in text files, or newspaper-year combinations.
 
-### Basic Usage
+### Basic usage
 
 ```bash
 python multiprocess_pp_issues_mets_alto_full.py --input /path/to/data --output /path/to/output --date 20250329
 ```
 
-### Usage Examples
+### Examples
 
 #### Process all issues in input directories
 
@@ -72,7 +72,7 @@ NENZC_1857
 python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --date 20250329 --workers 8
 ```
 
-### Command Line Arguments
+### Command line arguments
 
 | Argument | Description |
 |----------|-------------|
@@ -85,7 +85,7 @@ python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --outp
 | `--newspaper-year-file` | File containing list of newspaper_year codes to process |
 | `--newspaper-codes` | Space-separated list of newspaper codes to process |
 
-## Output Structure
+## Output structure
 
 The script generates output in the following structure:
 
@@ -98,7 +98,7 @@ output_directory/
     └── summary_YYYYMMDD_HHMMSS.json
 ```
 
-Each parquet file contains extracted article data for a single newspaper issue, and the summary JSON file contains statistics and details about the processing run.
+Each parquet file contains extracted article data for a single newspaper issue, and the summary JSON file contains statistics and issues for the processing run.
 
 ## Acknowledgements
 
