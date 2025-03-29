@@ -31,7 +31,7 @@ python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --outp
 #### Process specific issues by code
 
 ```bash
-python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --date 20250329 --issues CHP_19031228 NZFL_19040101
+python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --date 20250329 --issues DSC_18471002 TC_18580910
 ```
 
 #### Process issues listed in a file
@@ -42,15 +42,15 @@ python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --outp
 
 Where `issues.txt` contains one issue code per line:
 ```
-CHP_19031228
-NZFL_19040101
-AGS_19000203
+DSC_18471002
+TC_18580910
+NENZC_18571024
 ```
 
 #### Process specific newspaper-year combinations
 
 ```bash
-python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --date 20250329 --newspaper-codes CHP_1903 NZFL_1904
+python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --date 20250329 --newspaper-codes DSC_1847 NENZC_1857
 ```
 
 #### Process newspaper-year combinations listed in a file
@@ -61,9 +61,9 @@ python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --outp
 
 Where `newspaper_years.txt` contains one newspaper-year code per line:
 ```
-CHP_1903
-NZFL_1904
-AGS_1900
+DSC_1847
+TC_1858
+NENZC_1857
 ```
 
 #### Specify number of worker processes
