@@ -3,7 +3,9 @@ message: "If you use this software, please cite it as below."
 authors:
 - family-names: "Stahel"
   given-names: "Karin"
+ orcid: ""
 title: "Papers Past open data METS/ALTO extraction script"
 version: 1.0
+doi: ""
 date-released: 2025-03-29
 url: "https://github.com/karinstahel/papers-past-open-data-extraction"
