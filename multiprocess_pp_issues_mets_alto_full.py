@@ -1,10 +1,10 @@
 #! /usr/bin/env python3
 """
-A script that used multiprocessing to extract article data
+A script that uses multiprocessing to extract article data
 from METS/ALTO files in Papers Past open data tar.gz files.
 
-The data is saved by newspaper issue in parquet format with
-detailed error and completion logging in separate files.
+The data is saved by newspaper issue in a pandas dataframe in 
+parquet format with detailed error and completion logging in separate files.
 
 Author: Karin Stahel
 Claude 3.7 Sonnet was used to assist with aspects of
