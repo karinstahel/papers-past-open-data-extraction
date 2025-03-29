@@ -1,12 +1,12 @@
 # Papers Past Open Data METS/ALTO extraction script
 
-This Python script extracts article data from METS/ALTO files in Papers Past open data tar.gz files using multiprocessing. The tool processes newspaper archives and saves extracted article data by newspaper issue in parquet format with detailed error and completion logging.
+This Python script uses multiprocessing to effciently extract article data from METS/ALTO XML (in tar.gz files) in the [National Library of New Zealand's Papers Past open data](https://natlib.govt.nz/about-us/open-data/papers-past-metadata/papers-past-newspaper-open-data-pilot/overview-papers-past-newspaper-open-data-pilot). The script process the archive files and saves extracted article data by newspaper issue in parquet format with detailed error and completion logging.
 
 ## Features
 
 - Extracts newspaper article content and metadata from METS/ALTO XML files
 - Preserves article structure and layout information
-- Handles complex text normalization including hyphenation and special characters
+- Handles text normalisation including hyphenation and special characters
 - Processes multiple issues in parallel using multiprocessing
 - Provides detailed logging and statistics about the extraction process
 - Supports various input options (specific issues, newspaper codes, etc.)
