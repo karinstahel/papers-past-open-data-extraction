@@ -83,7 +83,7 @@ python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --outp
 | `--issue-file` | File containing list of issue codes to process |
 | `--issues` | Space-separated list of issue codes to process |
 | `--newspaper-year-file` | File containing list of newspaper_year codes to process |
-| `--newspaper-codes` | Space-separated list of newspaper codes to process |
+| `--newspaper-codes` | Space-separated list of newspaper_year codes to process |
 
 ## Output structure
 
