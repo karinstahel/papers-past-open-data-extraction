@@ -12,30 +12,14 @@ This Python script extracts article data from METS/ALTO files in Papers Past ope
 - Supports various input options (specific issues, newspaper codes, etc.)
 - Outputs data in parquet format for efficient storage and analysis
 
-## Dependencies
-
-```
-lxml
-pandas
-tqdm
-```
-
-## Installation
-
-1. Clone this repository
-2. Install the required dependencies:
-   ```
-   pip install lxml pandas tqdm
-   ```
-
 ## Usage
 
-The script offers multiple ways to specify which newspaper issues to process.
+Run this script from the command line using Python. The tool offers multiple ways to specify which newspaper issues to process, including individual issue codes, lists in text files, or newspaper-year combinations.
 
 ### Basic Usage
 
 ```bash
-python mets_alto_extraction.py --input /path/to/data --output /path/to/output --date 20250329
+python multiprocess_pp_issues_mets_alto_full.py --input /path/to/data --output /path/to/output --date 20250329
 ```
 
 ### Usage Examples
@@ -43,19 +27,19 @@ python mets_alto_extraction.py --input /path/to/data --output /path/to/output --
 #### Process all issues in input directories
 
 ```bash
-python mets_alto_extraction.py --input /data/papers_past --output /results --date 20250329
+python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --date 20250329
 ```
 
 #### Process specific issues by code
 
 ```bash
-python mets_alto_extraction.py --input /data/papers_past --output /results --date 20250329 --issues CHP_19031228 NZFL_19040101
+python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --date 20250329 --issues CHP_19031228 NZFL_19040101
 ```
 
 #### Process issues listed in a file
 
 ```bash
-python mets_alto_extraction.py --input /data/papers_past --output /results --date 20250329 --issue-file issues.txt
+python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --date 20250329 --issue-file issues.txt
 ```
 
 Where `issues.txt` contains one issue code per line:
@@ -68,13 +52,13 @@ AGS_19000203
 #### Process specific newspaper-year combinations
 
 ```bash
-python mets_alto_extraction.py --input /data/papers_past --output /results --date 20250329 --newspaper-codes CHP_1903 NZFL_1904
+python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --date 20250329 --newspaper-codes CHP_1903 NZFL_1904
 ```
 
 #### Process newspaper-year combinations listed in a file
 
 ```bash
-python mets_alto_extraction.py --input /data/papers_past --output /results --date 20250329 --newspaper-year-file newspaper_years.txt
+python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --date 20250329 --newspaper-year-file newspaper_years.txt
 ```
 
 Where `newspaper_years.txt` contains one newspaper-year code per line:
@@ -87,7 +71,7 @@ AGS_1900
 #### Specify number of worker processes
 
 ```bash
-python mets_alto_extraction.py --input /data/papers_past --output /results --date 20250329 --workers 8
+python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --date 20250329 --workers 8
 ```
 
 ### Command Line Arguments
@@ -120,12 +104,6 @@ Each parquet file contains extracted article data for a single newspaper issue, 
 
 ## Acknowledgements
 
-This code is adapted from work by [Joshua Wilson Black](https://github.com/JoshuaWilsonBlack/newspaper-philosophy-methods)
+This code is adapted from code originally developed by [Joshua Wilson Black](https://github.com/JoshuaWilsonBlack/newspaper-philosophy-methods)
 
 Wilson Black, J. (2023). Creating specialized corpora from digitized historical newspaper archives: An iterative bootstrapping approach. *Digital Scholarship in the Humanities, 38*(2), 779–797. [https://doi.org/10.1093/llc/fqac079](https://doi.org/10.1093/llc/fqac079)
-
-
-
-## Author
-
-Karin Stahel, with assistance from Claude 3.7 Sonnet for troubleshooting and code refinement.
