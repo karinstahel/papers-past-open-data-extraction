@@ -10,7 +10,7 @@ Author: Karin Stahel
 Claude 3.7 Sonnet was used to assist with aspects of
 troubleshooting and code refinement.
 
-Adapted from code created by Johsua Wilson Black (2023).
+Adapted from code created by Joshua Wilson Black (2023).
 See https://doi.org/10.1093/llc/fqac079
 """
 # %%
