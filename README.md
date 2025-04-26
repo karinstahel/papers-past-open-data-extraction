@@ -14,7 +14,7 @@ This Python script uses multiprocessing to efficiently extract article data from
 
 ### Setting up a Python virtual environment
 
-It's recommended to run this script in a virtual environment to manage dependencies cleanly:
+It's recommended to run this script in a virtual environment to manage dependencies cleanly. Open a terminal or command prompt and run the following commands:
 
 #### Windows
 ```bash
