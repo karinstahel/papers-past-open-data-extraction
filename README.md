@@ -23,6 +23,42 @@ The script will check for the presence of either pyarrow or fastparquet and exit
 - Supports various input options (specific issues, newspaper codes, etc.)
 - Outputs data in parquet format
 
+## Installation
+
+### Setting up a Python virtual environment
+
+It's recommended to run this script in a virtual environment to manage dependencies cleanly:
+
+#### Windows
+```bash
+# Create a new virtual environment
+python -m venv pp_env
+
+# Activate the environment
+pp_env\Scripts\activate
+
+# Install required dependencies
+pip install -r requirements.txt
+# or install individually:
+pip install pandas lxml tqdm pyarrow
+```
+
+#### macOS/Linux
+```bash
+# Create a new virtual environment
+python3 -m venv pp_env
+
+# Activate the environment
+source pp_env/bin/activate
+
+# Install required dependencies
+pip install -r requirements.txt
+# or install individually:
+pip install pandas lxml tqdm pyarrow
+```
+
+For more information on virtual environments, see the [Python documentation](https://docs.python.org/3/library/venv.html).
+
 ## Usage
 
 Run this script from the command line using Python. As shown below, there are multiple ways to specify which newspaper issues to process, including individual issue codes, lists in text files, or newspaper-year combinations.

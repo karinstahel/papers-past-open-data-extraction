@@ -3,7 +3,7 @@
 A script that uses multiprocessing to extract article data
 from METS/ALTO files in Papers Past open data tar.gz files.
 
-The data is saved by newspaper issue in a pandas dataframe in 
+The data is saved by newspaper issue in a pandas dataframe in
 parquet format with detailed error and completion logging in separate files.
 
 Author: Karin Stahel
@@ -26,6 +26,32 @@ import argparse
 from lxml import etree as ET
 import pandas as pd
 from tqdm import tqdm
+import importlib.util
+import sys
+
+# Check if either pyarrow or fastparquet is installed
+def check_parquet_dependencies():
+    """
+    Check if either pyarrow or fastparquet is installed for parquet file support.
+    """
+    pyarrow_available = importlib.util.find_spec("pyarrow") is not None
+    fastparquet_available = importlib.util.find_spec("fastparquet") is not None
+
+    if not (pyarrow_available or fastparquet_available):
+        print("ERROR: Neither 'pyarrow' nor 'fastparquet' is installed.")
+        print("Please install one of these packages to support parquet file operations:")
+        print("  pip install pyarrow")
+        print("  or")
+        print("  pip install fastparquet")
+        sys.exit(1)
+
+    if pyarrow_available:
+        return "pyarrow"
+    return "fastparquet"
+
+# Check for parquet dependencies before proceeding
+parquet_engine = check_parquet_dependencies()
+logging.info(f"Using {parquet_engine} for parquet file operations")
 
 # Set up logging
 logging.basicConfig(
@@ -794,7 +820,7 @@ def process_issue(args, input_paths, output_path, rev_date):
                     f"PP_{issue_code}_{rev_date}.parquet"
                 )
 
-                df.to_parquet(output_file_path)
+                df.to_parquet(output_file_path, engine = parquet_engine)
 
                 # Clear memory
                 for root, _ in page_info.values():
