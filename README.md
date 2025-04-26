@@ -13,7 +13,7 @@ This Python script uses multiprocessing to efficiently extract article data from
   - pyarrow (recommended): `pip install pyarrow`
   - fastparquet (alternative): `pip install fastparquet`
 
-The script will check for the presence of either pyarrow or fastparquet and exit with a clear error message if neither is available.
+The script will check for the presence of either pyarrow or fastparquet and exit with an error message if neither is available.
 
 ## Features
 
