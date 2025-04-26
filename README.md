@@ -10,19 +10,6 @@ This Python script uses multiprocessing to efficiently extract article data from
 - Supports various input options (specific issues, newspaper codes, etc.)
 - Outputs data in parquet format
 
-## Requirements
-
-### Python dependencies
-- Python 3.6 or higher
-- pandas
-- lxml
-- tqdm
-- **Either** one of the following Parquet file backends:
-  - pyarrow (recommended): `pip install pyarrow`
-  - fastparquet (alternative): `pip install fastparquet`
-
-The script will check for the presence of either pyarrow or fastparquet and exit with an error message if neither is available.
-
 ## Installation
 
 ### Setting up a Python virtual environment
@@ -37,10 +24,8 @@ python -m venv pp_env
 # Activate the environment
 pp_env\Scripts\activate
 
-# Install required dependencies
+# Install required dependencies using requirements.txt (recommended)
 pip install -r requirements.txt
-# or install individually:
-pip install pandas lxml tqdm pyarrow
 ```
 
 #### macOS/Linux
@@ -51,10 +36,15 @@ python3 -m venv pp_env
 # Activate the environment
 source pp_env/bin/activate
 
-# Install required dependencies
+# Install required dependencies using requirements.txt (recommended)
 pip install -r requirements.txt
-# or install individually:
-pip install pandas lxml tqdm pyarrow
+```
+
+The `requirements.txt` file includes all necessary dependencies with appropriate version constraints, including pyarrow for parquet file operations. This is the recommended installation method to ensure compatibility.
+
+If you need to install dependencies individually instead:
+```bash
+pip install pandas>=1.5.3 lxml>=4.9.2 tqdm>=4.65.0 pyarrow>=8.0.0
 ```
 
 For more information on virtual environments, see the [Python documentation](https://docs.python.org/3/library/venv.html).
