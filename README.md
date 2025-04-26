@@ -66,7 +66,7 @@ Run this script from the command line using Python. As shown below, there are mu
 ### Basic usage
 
 ```bash
-python multiprocess_pp_issues_mets_alto_full.py --input /path/to/data --output /path/to/output --date '20250329'
+python multiprocess_pp_issues_mets_alto_full.py --input /path/to/data --output /path/to/output
 ```
 
 ### Examples
@@ -74,19 +74,19 @@ python multiprocess_pp_issues_mets_alto_full.py --input /path/to/data --output /
 #### Process all issues in input directories
 
 ```bash
-python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --date '20250329'
+python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results
 ```
 
 #### Process specific issues by code
 
 ```bash
-python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --date '20250329' --issues DSC_18471002 TC_18580910
+python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --issues DSC_18471002 TC_18580910
 ```
 
 #### Process issues listed in a file
 
 ```bash
-python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --date '20250329' --issue-file issues.txt
+python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --issue-file issues.txt
 ```
 
 Where `issues.txt` contains one issue code per line:
@@ -99,13 +99,13 @@ NENZC_18571024
 #### Process specific newspaper-year combinations
 
 ```bash
-python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --date '20250329' --newspaper-codes DSC_1847 NENZC_1857
+python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --newspaper-codes DSC_1847 NENZC_1857
 ```
 
 #### Process newspaper-year combinations listed in a file
 
 ```bash
-python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --date '20250329' --newspaper-year-file newspaper_years.txt
+python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --newspaper-year-file newspaper_years.txt
 ```
 
 Where `newspaper_years.txt` contains one newspaper-year code per line:
@@ -118,7 +118,7 @@ NENZC_1857
 #### Specify number of worker processes
 
 ```bash
-python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --date '20250329' --workers 8
+python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --workers 8
 ```
 
 ### Command line arguments
