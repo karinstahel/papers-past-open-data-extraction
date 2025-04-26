@@ -127,7 +127,7 @@ python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --outp
 |----------|-------------|
 | `--input` | One or more input directories containing tar.gz files (required) |
 | `--output` | Output directory for processed files (required) |
-| `--date` | Revision date for output files (e.g., '20250329') (required) |
+| `--date` | Revision date for output files (e.g., '20250329') (optional, defaults to current date) |
 | `--workers` | Maximum number of parallel workers (default: automatic) |
 | `--issue-file` | File containing list of issue codes to process |
 | `--issues` | Space-separated list of issue codes to process |

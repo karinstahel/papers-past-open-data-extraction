@@ -986,8 +986,8 @@ def parse_arguments():
     parser.add_argument("--output", dest = "output_path", required = True,
                         help = "Output directory for processed files")
 
-    parser.add_argument("--date", dest = "rev_date", required = True,
-                        help = "Revision date for output files (e.g., '20250305')")
+    parser.add_argument("--date", dest = "rev_date", required = False,
+                        help = "Revision date for output files (e.g., '20250305'). If not provided, current date will be used.")
 
     parser.add_argument("--workers", dest = "max_workers", type = int, default = None,
                         help = "Maximum number of parallel workers (default: auto)")
@@ -1004,7 +1004,14 @@ def parse_arguments():
     parser.add_argument("--newspaper-codes", dest="newspaper_codes", nargs="+", default=[],
                         help="Space-separated list of newspaper codes to process (optional)")
 
-    return parser.parse_args()
+    args = parser.parse_args()
+
+    # If no date provided, use current date
+    if not args.rev_date:
+        args.rev_date = time.strftime("%Y%m%d")
+        print(f"No date specified, using current date: {args.rev_date}")
+
+    return args
 
 # %%
 def main():
