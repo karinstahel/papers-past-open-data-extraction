@@ -49,10 +49,6 @@ def check_parquet_dependencies():
         return "pyarrow"
     return "fastparquet"
 
-# Check for parquet dependencies before proceeding
-parquet_engine = check_parquet_dependencies()
-logging.info(f"Using {parquet_engine} for parquet file operations")
-
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
@@ -62,6 +58,11 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
+
+# Check for parquet dependencies before proceeding
+parquet_engine = check_parquet_dependencies()
+logging.info(f"Using {parquet_engine} for parquet file operations")
+
 
 # Load METS namespace
 # http://www.loc.gov/standards/mets/namespace.html
@@ -363,7 +364,7 @@ def process_text_block(block_strings):
                 word_confidences.append(word_confidence)
                 i += 1
                 continue
-        # Case 3: Handle genuine hyphenated words (like "com-puter" split across lines)
+        # Case 3: Handle genuine hyphenated words (like "ship-ping" split across lines)
         if subs_type == "HypPart1" and i + 1 < len(block_strings):
             next_s = block_strings[i + 1]
             next_subs_type = next_s.get("SUBS_TYPE", "")
