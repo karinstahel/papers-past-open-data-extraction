@@ -1116,8 +1116,11 @@ def main():
     print(f"Total articles extracted: {total_articles}")
     print(f"Total articles skipped: {total_skipped_articles}")
     print(f"Total pages processed: {total_pages}")
-    print(f"Average articles per issue: {total_articles / len(successful) if successful else 0:.2f}")
-    print(f"Average processing time per issue: {elapsed / len(issues):.2f} seconds")
+    if successful:
+        print(f"Average articles per issue: {total_articles / len(successful):.2f}")
+        print(f"Average processing time per issue: {elapsed / len(issues):.2f} seconds")
+    else:
+        print("No issues were successfully processed")
 
     if total_skipped_articles > 0:
         print(f"\nWARNING: {total_skipped_articles} articles were skipped during extraction")
