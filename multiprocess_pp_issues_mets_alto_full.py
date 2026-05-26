@@ -1006,8 +1006,8 @@ def parse_arguments():
     parser.add_argument("--newspaper-year-file", dest = "newspaper_year_file", default=None,
                         help= "File containing list of newspaper_year codes to process (optional)")
 
-    parser.add_argument("--newspaper-codes", dest="newspaper_codes", nargs="+", default=[],
-                        help="Space-separated list of newspaper codes to process (optional)")
+    parser.add_argument("--newspaper-year-codes", dest="newspaper_codes", nargs="+", default=[],
+                        help="Space-separated list of newspaper_year codes to process, e.g. CHP_1903 (optional)")
 
     args = parser.parse_args()
 

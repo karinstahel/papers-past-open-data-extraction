@@ -89,7 +89,7 @@ NENZC_18571024
 #### Process specific newspaper-year combinations
 
 ```bash
-python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --newspaper-codes DSC_1847 NENZC_1857
+python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --output /results --newspaper-year-codes DSC_1847 NENZC_1857
 ```
 
 #### Process newspaper-year combinations listed in a file
@@ -122,7 +122,7 @@ python multiprocess_pp_issues_mets_alto_full.py --input /data/papers_past --outp
 | `--issue-file` | File containing list of issue codes to process |
 | `--issues` | Space-separated list of issue codes to process |
 | `--newspaper-year-file` | File containing list of newspaper_year codes to process |
-| `--newspaper-codes` | Space-separated list of newspaper_year codes to process |
+| `--newspaper-year-codes` | Space-separated list of newspaper_year codes to process |
 
 ## Output structure
 
