@@ -856,9 +856,13 @@ def batch_process_issues(issues, max_workers, input_paths, output_path, rev_date
     Returns:
         Tuple of (successful_issues, failed_issues, statistics)
     """
+    if not issues:
+        print("No issues to process")
+        return [], [], {}
+    
     # Determine optimal worker count if not specified
     if max_workers is None:
-        max_workers = min(cpu_count() - 1, len(issues))  # Leave one core free for system processes
+        max_workers = max(1, min(cpu_count() - 1, len(issues))) # Leave one core free for system processes
 
     print(f"Starting parallel processing with {max_workers} workers for {len(issues)} issues")
 
