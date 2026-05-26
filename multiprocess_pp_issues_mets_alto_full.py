@@ -365,6 +365,8 @@ def process_text_block(block_strings):
                 i += 1
                 continue
         # Case 3: Handle genuine hyphenated words (like "ship-ping" split across lines)
+        # Note: skip_next and i += 1 both advance past HypPart2 intentionally —
+        # skip_next handles the iteration at the top of the loop, i += 1 handles the current case exit.
         if subs_type == "HypPart1" and i + 1 < len(block_strings):
             next_s = block_strings[i + 1]
             next_subs_type = next_s.get("SUBS_TYPE", "")
