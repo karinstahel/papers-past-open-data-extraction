@@ -346,6 +346,141 @@ def extract_alto_processing_info(page_root):
 
     return processing_info
 
+def _safe_numeric(value):
+    """
+    Safely convert a string value to an integer, handling float strings and None.
+
+    Args:
+        value: String numeric value or None
+
+    Returns:
+        Integer value or None if conversion fails
+    """
+    if value is None:
+        return None
+    try:
+        return int(float(value))
+    except (ValueError, TypeError):
+        return None
+
+
+def _safe_float(value):
+    """
+    Safely convert a string value to a float, handling None.
+
+    Args:
+        value: String numeric value or None
+
+    Returns:
+        Float value or None if conversion fails
+    """
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return None
+
+
+def extract_page_metadata(page_root):
+    """
+    Extract page-level metadata from a parsed ALTO XML root element.
+
+    Extracts the Page element attributes (HEIGHT, WIDTH, ACCURACY, PC) and
+    margin data (TopMargin, LeftMargin, RightMargin, BottomMargin) with their
+    positional attributes (HPOS, VPOS, WIDTH, HEIGHT).
+
+    Args:
+        page_root: Parsed lxml Element for the ALTO XML page
+
+    Returns:
+        Dictionary containing page metadata with keys:
+        - page_height, page_width, page_accuracy, page_pc
+        - topmargin_hpos, topmargin_vpos, topmargin_width, topmargin_height
+        - leftmargin_hpos, leftmargin_vpos, leftmargin_width, leftmargin_height
+        - rightmargin_hpos, rightmargin_vpos, rightmargin_width, rightmargin_height
+        - bottommargin_hpos, bottommargin_vpos, bottommargin_width, bottommargin_height
+    """
+    metadata = {}
+
+    # Extract 'Page' element attributes using local-name() for namespace agnosticism
+    page_elements = page_root.xpath(".//*[local-name()='Page']")
+    if not page_elements:
+        logging.warning("No Page element found in ALTO XML")
+        return metadata
+
+    page_el = page_elements[0]
+
+    # Page dimensions and quality metrics
+    metadata["page_height"] = _safe_numeric(page_el.get("HEIGHT"))
+    metadata["page_width"] = _safe_numeric(page_el.get("WIDTH"))
+    metadata["page_accuracy"] = _safe_float(page_el.get("ACCURACY"))
+    metadata["page_pc"] = _safe_float(page_el.get("PC"))
+
+    # Extract margin data for each margin type
+    margin_types = ["TopMargin", "LeftMargin", "RightMargin", "BottomMargin"]
+    for margin_type in margin_types:
+        prefix = margin_type.lower()
+
+        margin_elements = page_el.xpath(f".//*[local-name()='{margin_type}']")
+        if margin_elements:
+            margin_el = margin_elements[0]
+            metadata[f"{prefix}_hpos"] = _safe_numeric(margin_el.get("HPOS"))
+            metadata[f"{prefix}_vpos"] = _safe_numeric(margin_el.get("VPOS"))
+            metadata[f"{prefix}_width"] = _safe_numeric(margin_el.get("WIDTH"))
+            metadata[f"{prefix}_height"] = _safe_numeric(margin_el.get("HEIGHT"))
+        else:
+            metadata[f"{prefix}_hpos"] = None
+            metadata[f"{prefix}_vpos"] = None
+            metadata[f"{prefix}_width"] = None
+            metadata[f"{prefix}_height"] = None
+
+    return metadata
+
+
+def get_article_page_data(block_ids, title_block_ids, all_page_metadata):
+    """
+    Collect page-level metadata for the pages an article spans,
+    based on its block IDs.
+
+    Args:
+        block_ids: List of content block ID strings
+        title_block_ids: List of title block ID strings
+        all_page_metadata: Dictionary mapping page keys (e.g. 'P1') to
+                          page metadata dictionaries
+
+    Returns:
+        Dictionary with page_ids list and lists for each page-level field
+    """
+    # Combine all block IDs and extract unique pages
+    all_block_ids = list(title_block_ids) + list(block_ids)
+    pages = set()
+    for block_id in all_block_ids:
+        match = re.match(r"(P\d+)_", str(block_id))
+        if match:
+            pages.add(match.group(1))
+
+    sorted_pages = sorted(pages, key=lambda p: int(p[1:]))
+
+    page_level_fields = [
+        "page_height", "page_width", "page_accuracy", "page_pc",
+        "topmargin_hpos", "topmargin_vpos", "topmargin_width", "topmargin_height",
+        "leftmargin_hpos", "leftmargin_vpos", "leftmargin_width", "leftmargin_height",
+        "rightmargin_hpos", "rightmargin_vpos", "rightmargin_width", "rightmargin_height",
+        "bottommargin_hpos", "bottommargin_vpos", "bottommargin_width", "bottommargin_height",
+    ]
+
+    result = {"page_ids": sorted_pages}
+    for field in page_level_fields:
+        result[field] = []
+
+    for page_id in sorted_pages:
+        pm = all_page_metadata.get(page_id, {})
+        for field in page_level_fields:
+            result[field].append(pm.get(field))
+
+    return result
+
 
 # %%
 def parse_pages(pages_tarinfo, tar):
@@ -610,7 +745,8 @@ def process_block(block_id, page_info, block_type = "content"):
 
 # %%
 def extract_text_from_alto(article_codes, page_info, issue_code,
-                           issue_metadata, alto_processing_info):
+                           issue_metadata, alto_processing_info,
+                           all_page_metadata):
     """
     Extract text and layout information for each article with accurate title identification.
     Maintains proper order of text blocks.
@@ -626,6 +762,7 @@ def extract_text_from_alto(article_codes, page_info, issue_code,
         issue_code: Issue code identifier
         issue_metadata: Dictionary of issue-level metadata from METS
         alto_processing_info: Dictionary of ALTO processing software info
+        all_page_metadata: Dictionary mapping page keys to page metadata dicts
 
     Returns:
         Dictionary of articles with extracted text and layout info
@@ -649,12 +786,17 @@ def extract_text_from_alto(article_codes, page_info, issue_code,
 
         title_data = process_title_blocks(title_block_ids, page_info, issue_code)
         content_data = process_content_blocks(text_block_ids, page_info, issue_code, order_map)
+        # Collect page data for this article
+        article_page_data = get_article_page_data(
+            text_block_ids, title_block_ids, all_page_metadata)
+
         texts_dict[article_id] = combine_article_data(mets_title,
                                                       title_data,
                                                       content_data,
                                                       non_text_elements,
                                                       issue_metadata,
-                                                      alto_processing_info)
+                                                      alto_processing_info,
+                                                      article_page_data)
 
     if skipped_articles > 0:
         logging.info(f"Issue {issue_code}: Extracted {len(texts_dict)} articles, skipped {skipped_articles} articles")
@@ -770,7 +912,7 @@ def process_content_blocks(text_block_ids, page_info, issue_code, order_map = No
 
 # %%
 def combine_article_data(mets_title, title_data, content_data, non_text_elements,
-                         issue_metadata, alto_processing_info):
+                         issue_metadata, alto_processing_info, article_page_data):
     """
     Combine title and content data into a single article dictionary.
 
@@ -781,6 +923,7 @@ def combine_article_data(mets_title, title_data, content_data, non_text_elements
         non_text_elements: List of non-text element types (TABLE, IMAGE, etc.)
         issue_metadata: Dictionary of issue-level metadata from METS
         alto_processing_info: Dictionary of ALTO processing software info
+        article_page_data: Dictionary of page-level metadata for this article's pages
 
     Returns:
         Combined article data
@@ -828,6 +971,27 @@ def combine_article_data(mets_title, title_data, content_data, non_text_elements
         alto_processing_info["preprocess_version"],
         alto_processing_info["ocr_software"],
         alto_processing_info["ocr_version"],
+        article_page_data["page_ids"],
+        article_page_data["page_height"],
+        article_page_data["page_width"],
+        article_page_data["page_accuracy"],
+        article_page_data["page_pc"],
+        article_page_data["topmargin_hpos"],
+        article_page_data["topmargin_vpos"],
+        article_page_data["topmargin_width"],
+        article_page_data["topmargin_height"],
+        article_page_data["leftmargin_hpos"],
+        article_page_data["leftmargin_vpos"],
+        article_page_data["leftmargin_width"],
+        article_page_data["leftmargin_height"],
+        article_page_data["rightmargin_hpos"],
+        article_page_data["rightmargin_vpos"],
+        article_page_data["rightmargin_width"],
+        article_page_data["rightmargin_height"],
+        article_page_data["bottommargin_hpos"],
+        article_page_data["bottommargin_vpos"],
+        article_page_data["bottommargin_width"],
+        article_page_data["bottommargin_height"],
     )
 
 # %%
@@ -931,8 +1095,15 @@ def process_issue(args, input_paths, output_path, rev_date):
                 first_page_key = sorted(page_info.keys())[0]
                 alto_processing_info = extract_alto_processing_info(page_info[first_page_key][0])
 
+                # Extract page-level metadata for all pages
+                all_page_metadata = {}
+                for page_key, (page_root, _) in page_info.items():
+                    all_page_metadata[page_key] = extract_page_metadata(page_root)
+                
                 articles_with_text = extract_text_from_alto(article_codes, page_info, issue_code,
-                                                            issue_metadata, alto_processing_info)
+                                                            issue_metadata, alto_processing_info,
+                                                            all_page_metadata)
+                
                 skipped_articles = total_articles_in_mets - len(articles_with_text)
 
                 if skipped_articles > 0:
@@ -979,6 +1150,27 @@ def process_issue(args, input_paths, output_path, rev_date):
                         "preprocess_version",       # Pre-processing software version from ALTO
                         "ocr_software",             # OCR software name from ALTO
                         "ocr_version",              # OCR software version from ALTO
+                        "page_ids",                 # List of page IDs this article spans
+                        "page_height",              # List of page heights
+                        "page_width",               # List of page widths
+                        "page_accuracy",            # List of page accuracy values
+                        "page_pc",                  # List of page confidence values
+                        "topmargin_hpos",           # List of top margin HPOS values
+                        "topmargin_vpos",           # List of top margin VPOS values
+                        "topmargin_width",          # List of top margin widths
+                        "topmargin_height",         # List of top margin heights
+                        "leftmargin_hpos",          # List of left margin HPOS values
+                        "leftmargin_vpos",          # List of left margin VPOS values
+                        "leftmargin_width",         # List of left margin widths
+                        "leftmargin_height",        # List of left margin heights
+                        "rightmargin_hpos",         # List of right margin HPOS values
+                        "rightmargin_vpos",         # List of right margin VPOS values
+                        "rightmargin_width",        # List of right margin widths
+                        "rightmargin_height",       # List of right margin heights
+                        "bottommargin_hpos",        # List of bottom margin HPOS values
+                        "bottommargin_vpos",        # List of bottom margin VPOS values
+                        "bottommargin_width",       # List of bottom margin widths
+                        "bottommargin_height",      # List of bottom margin heights
                     ]
                 )
 
