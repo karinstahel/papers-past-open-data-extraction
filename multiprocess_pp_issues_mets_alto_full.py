@@ -454,6 +454,7 @@ def process_block(block_id, page_info, block_type = "content"):
         f"{prefix}block_vpos": [],
         f"{prefix}block_widths": [],
         f"{prefix}block_heights": [],
+        f"{prefix}block_line_counts": {block_id: len(block_lines)},
         block_id_key: [block_id],
     }
 
@@ -569,13 +570,16 @@ def process_title_blocks(title_block_ids, page_info, issue_code):
         "title_block_widths": [],
         "title_block_heights": [],
         "processed_title_block_ids": [],
+        "title_block_line_counts": {},
     }
 
     for block_id in title_block_ids:
         block_data = process_block(block_id, page_info, block_type = "title")
         if block_data:
             for key, value in block_data.items():
-                if isinstance(value, list):
+                if isinstance(value, dict):
+                    title_data[key].update(value)
+                elif isinstance(value, list):
                     title_data[key].extend(value)
                 else:
                     title_data[key] = value
@@ -612,6 +616,7 @@ def process_content_blocks(text_block_ids, page_info, issue_code, order_map = No
         "block_heights": [],
         "processed_text_block_ids": [],
         "block_order_positions": [],  # Store position for each block
+        "block_line_counts": {},
     }
 
     blocks_data = []  # Will store (block_id, block_data, order_position)
@@ -640,6 +645,7 @@ def process_content_blocks(text_block_ids, page_info, issue_code, order_map = No
         content_data["block_vpos"].extend(block_data.get("block_vpos", []))
         content_data["block_widths"].extend(block_data.get("block_widths", []))
         content_data["block_heights"].extend(block_data.get("block_heights", []))
+        content_data["block_line_counts"].update(block_data.get("block_line_counts", {}))
 
     return content_data
 
@@ -676,6 +682,7 @@ def combine_article_data(mets_title, title_data, content_data, non_text_elements
         title_data["title_block_heights"],
         title_data["title_confidences"],
         title_data["processed_title_block_ids"],
+        title_data["title_block_line_counts"],
         content_data["line_widths"],
         content_data["line_heights"],
         content_data["line_hpos"],
@@ -686,6 +693,7 @@ def combine_article_data(mets_title, title_data, content_data, non_text_elements
         content_data["block_heights"],
         content_data["word_confidences"],
         content_data["processed_text_block_ids"],
+        content_data["block_line_counts"],
         non_text_elements,
     )
 
@@ -790,30 +798,32 @@ def process_issue(args, input_paths, output_path, rev_date):
                     articles_with_text,
                     orient = "index",
                     columns = [
-                        "mets_title",           # Original METS title
-                        "title_text",           # Title text from ALTO
-                        "text",                 # Content text from ALTO
-                        "title_line_widths",    # Width of each line in title
-                        "title_line_heights",   # Height of each line in title
-                        "title_line_hpos",      # HPOS of each line in title
-                        "title_line_vpos",      # VPOS of each line in title
-                        "title_block_hpos",     # HPOS of each block in title
-                        "title_block_vpos",     # VPOS of each block in title
-                        "title_block_widths",   # Width of each block in title
-                        "title_block_heights",  # Height of each block in title
-                        "title_confidences",    # Word confidences in title
-                        "title_block_ids",      # Block IDs for title
-                        "line_widths",          # Width of each line in content
-                        "line_heights",         # Height of each line in content
-                        "line_hpos",            # HPOS of each line in content
-                        "line_vpos",            # VPOS of each line in content
-                        "block_hpos",           # HPOS of each block in content
-                        "block_vpos",           # VPOS of each block in content
-                        "block_widths",         # Width of each block in content
-                        "block_heights",        # Height of each block in content
-                        "word_confidences",     # Word confidences in content
-                        "block_ids",            # Block IDs for content
-                        "non_text_elements",    # List of each non-text element found (including duplicates)
+                        "mets_title",               # Original METS title
+                        "title_text",               # Title text from ALTO
+                        "text",                     # Content text from ALTO
+                        "title_line_widths",        # Width of each line in title
+                        "title_line_heights",       # Height of each line in title
+                        "title_line_hpos",          # HPOS of each line in title
+                        "title_line_vpos",          # VPOS of each line in title
+                        "title_block_hpos",         # HPOS of each block in title
+                        "title_block_vpos",         # VPOS of each block in title
+                        "title_block_widths",       # Width of each block in title
+                        "title_block_heights",      # Height of each block in title
+                        "title_confidences",        # Word confidences in title
+                        "title_block_ids",          # Block IDs for title
+                        "line_widths",              # Width of each line in content
+                        "line_heights",             # Height of each line in content
+                        "line_hpos",                # HPOS of each line in content
+                        "line_vpos",                # VPOS of each line in content
+                        "block_hpos",               # HPOS of each block in content
+                        "block_vpos",               # VPOS of each block in content
+                        "block_widths",             # Width of each block in content
+                        "block_heights",            # Height of each block in content
+                        "word_confidences",         # Word confidences in content
+                        "block_ids",                # Block IDs for content
+                        "title_block_line_counts",  # Dict mapping title block IDs to their line counts
+                        "block_line_counts",        # Dict mapping content block IDs to their line counts
+                        "non_text_elements",        # List of each non-text element found (including duplicates)
                     ]
                 )
 
