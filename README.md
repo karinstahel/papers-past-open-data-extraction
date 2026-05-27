@@ -156,11 +156,11 @@ def clean_parquet_dicts(df, columns=None):
     those None values so each row's dict contains only its own data.
 
     Args:
-        df: pandas df read from a Papers Past parquet file created with 
-            the script in this repo.
-        columns: List of column names to clean. If None, defaults to
-                 the four dict columns: block_line_counts, block_style_refs,
-                 title_block_line_counts, title_block_style_refs
+        df:         pandas df read from a Papers Past parquet file created with 
+                    the script in this repo.
+        columns:    List of column names to clean. If None, defaults to
+                    the four dict columns: block_line_counts, block_style_refs,
+                    title_block_line_counts, title_block_style_refs
 
     Returns:
         Dataframe with cleaned dictionary columns
