@@ -811,6 +811,7 @@ def process_issue(args, input_paths, output_path, rev_date):
                         "title_block_heights",      # Height of each block in title
                         "title_confidences",        # Word confidences in title
                         "title_block_ids",          # Block IDs for title
+                        "title_block_line_counts",  # Dict mapping title block IDs to their line counts
                         "line_widths",              # Width of each line in content
                         "line_heights",             # Height of each line in content
                         "line_hpos",                # HPOS of each line in content
@@ -821,7 +822,6 @@ def process_issue(args, input_paths, output_path, rev_date):
                         "block_heights",            # Height of each block in content
                         "word_confidences",         # Word confidences in content
                         "block_ids",                # Block IDs for content
-                        "title_block_line_counts",  # Dict mapping title block IDs to their line counts
                         "block_line_counts",        # Dict mapping content block IDs to their line counts
                         "non_text_elements",        # List of each non-text element found (including duplicates)
                     ]
