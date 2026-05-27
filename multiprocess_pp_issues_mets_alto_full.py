@@ -455,6 +455,7 @@ def process_block(block_id, page_info, block_type = "content"):
         f"{prefix}block_widths": [],
         f"{prefix}block_heights": [],
         f"{prefix}block_line_counts": {block_id: len(block_lines)},
+        f"{prefix}block_style_refs": {block_id: xml_block.get("STYLEREFS", "")},
         block_id_key: [block_id],
     }
 
@@ -571,6 +572,7 @@ def process_title_blocks(title_block_ids, page_info, issue_code):
         "title_block_heights": [],
         "processed_title_block_ids": [],
         "title_block_line_counts": {},
+        "title_block_style_refs": {},
     }
 
     for block_id in title_block_ids:
@@ -617,6 +619,7 @@ def process_content_blocks(text_block_ids, page_info, issue_code, order_map = No
         "processed_text_block_ids": [],
         "block_order_positions": [],  # Store position for each block
         "block_line_counts": {},
+        "block_style_refs": {},
     }
 
     blocks_data = []  # Will store (block_id, block_data, order_position)
@@ -646,6 +649,7 @@ def process_content_blocks(text_block_ids, page_info, issue_code, order_map = No
         content_data["block_widths"].extend(block_data.get("block_widths", []))
         content_data["block_heights"].extend(block_data.get("block_heights", []))
         content_data["block_line_counts"].update(block_data.get("block_line_counts", {}))
+        content_data["block_style_refs"].update(block_data.get("block_style_refs", {}))
 
     return content_data
 
@@ -683,6 +687,7 @@ def combine_article_data(mets_title, title_data, content_data, non_text_elements
         title_data["title_confidences"],
         title_data["processed_title_block_ids"],
         title_data["title_block_line_counts"],
+        title_data["title_block_style_refs"],
         content_data["line_widths"],
         content_data["line_heights"],
         content_data["line_hpos"],
@@ -694,6 +699,7 @@ def combine_article_data(mets_title, title_data, content_data, non_text_elements
         content_data["word_confidences"],
         content_data["processed_text_block_ids"],
         content_data["block_line_counts"],
+        content_data["block_style_refs"],
         non_text_elements,
     )
 
@@ -812,6 +818,7 @@ def process_issue(args, input_paths, output_path, rev_date):
                         "title_confidences",        # Word confidences in title
                         "title_block_ids",          # Block IDs for title
                         "title_block_line_counts",  # Dict mapping title block IDs to their line counts
+                        "title_block_style_refs",   # Dict mapping title block IDs to their STYLEREFS
                         "line_widths",              # Width of each line in content
                         "line_heights",             # Height of each line in content
                         "line_hpos",                # HPOS of each line in content
@@ -823,6 +830,7 @@ def process_issue(args, input_paths, output_path, rev_date):
                         "word_confidences",         # Word confidences in content
                         "block_ids",                # Block IDs for content
                         "block_line_counts",        # Dict mapping content block IDs to their line counts
+                        "block_style_refs",         # Dict mapping content block IDs to their STYLEREFS
                         "non_text_elements",        # List of each non-text element found (including duplicates)
                     ]
                 )
