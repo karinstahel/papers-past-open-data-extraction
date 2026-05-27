@@ -7,7 +7,7 @@ The data is saved by newspaper issue in a pandas dataframe in
 parquet format with detailed error and completion logging in separate files.
 
 Author: Karin Stahel
-Claude 3.7 Sonnet was used to assist with aspects of
+Claude 3.7 Sonnet and Opus 4.6 were used to assist with aspects of
 troubleshooting and code refinement.
 
 Adapted from code created by Joshua Wilson Black (2023).
@@ -236,6 +236,116 @@ def mets2codes_inner(text, issue_code):
     mets_root.clear()
 
     return art_dict
+
+
+def extract_issue_metadata(mets_root):
+    """
+    Extract issue-level metadata from a parsed METS XML root.
+
+    Extracts:
+    - Issue label from the root mets element
+    - CREATEDATE and LASTMODDATE from metsHdr
+    - Language code from MODSMD_PRINT dmdSec
+    - Alternative titles from MODSMD_PRINT dmdSec
+
+    Args:
+        mets_root: Parsed lxml root element of the METS file
+
+    Returns:
+        Dictionary with keys: issue_label, create_date, last_mod_date,
+        language, alternative_titles
+    """
+    metadata = {
+        "issue_label": "",
+        "create_date": "",
+        "last_mod_date": "",
+        "language": "",
+        "alternative_titles": [],
+    }
+
+    # Issue label from root <mets> element
+    metadata["issue_label"] = mets_root.get("LABEL", "")
+
+    # CREATEDATE and LASTMODDATE from metsHdr
+    mets_hdr = mets_root.xpath(".//mets:metsHdr", namespaces=NS)
+    if mets_hdr:
+        metadata["create_date"] = mets_hdr[0].get("CREATEDATE", "")
+        metadata["last_mod_date"] = mets_hdr[0].get("LASTMODDATE", "")
+
+    # Language and alternative titles from MODSMD_PRINT dmdSec
+    dmdsec_elements = mets_root.xpath(
+        ".//mets:dmdSec[@ID='MODSMD_PRINT']", namespaces=NS
+    )
+    if dmdsec_elements:
+        dmdsec = dmdsec_elements[0]
+
+        # Language code
+        lang_elements = dmdsec.xpath(
+            ".//*[local-name()='languageTerm']"
+        )
+        if lang_elements and lang_elements[0].text:
+            metadata["language"] = lang_elements[0].text.strip()
+
+        # Alternative titles
+        title_elements = dmdsec.xpath(
+            ".//*[local-name()='titleInfo']//*[local-name()='title']"
+        )
+        for title_el in title_elements:
+            if title_el.text and title_el.text.strip():
+                metadata["alternative_titles"].append(title_el.text.strip())
+
+    return metadata
+
+
+def extract_alto_processing_info(page_root):
+    """
+    Extract OCR processing software information from an ALTO XML root.
+
+    Extracts software name and version from the preProcessingStep
+    and ocrProcessingStep elements in the ALTO Description.
+
+    Args:
+        page_root: Parsed lxml root element of an ALTO page file
+
+    Returns:
+        Dictionary with keys: preprocess_software, preprocess_version,
+        ocr_software, ocr_version
+    """
+    processing_info = {
+        "preprocess_software": "",
+        "preprocess_version": "",
+        "ocr_software": "",
+        "ocr_version": "",
+    }
+
+    # Pre-processing step
+    pre_elements = page_root.xpath(
+        ".//*[local-name()='preProcessingStep']//*[local-name()='softwareName']"
+    )
+    if pre_elements and pre_elements[0].text:
+        processing_info["preprocess_software"] = pre_elements[0].text.strip()
+
+    pre_version = page_root.xpath(
+        ".//*[local-name()='preProcessingStep']//*[local-name()='softwareVersion']"
+    )
+    if pre_version and pre_version[0].text:
+        processing_info["preprocess_version"] = pre_version[0].text.strip()
+
+    # OCR processing step
+    ocr_elements = page_root.xpath(
+        ".//*[local-name()='ocrProcessingStep']//*[local-name()='softwareName']"
+    )
+    if ocr_elements and ocr_elements[0].text:
+        processing_info["ocr_software"] = ocr_elements[0].text.strip()
+
+    ocr_version = page_root.xpath(
+        ".//*[local-name()='ocrProcessingStep']//*[local-name()='softwareVersion']"
+    )
+    if ocr_version and ocr_version[0].text:
+        processing_info["ocr_version"] = ocr_version[0].text.strip()
+
+    return processing_info
+
 
 # %%
 def parse_pages(pages_tarinfo, tar):
@@ -499,7 +609,8 @@ def process_block(block_id, page_info, block_type = "content"):
     return result
 
 # %%
-def extract_text_from_alto(article_codes, page_info, issue_code):
+def extract_text_from_alto(article_codes, page_info, issue_code,
+                           issue_metadata, alto_processing_info):
     """
     Extract text and layout information for each article with accurate title identification.
     Maintains proper order of text blocks.
@@ -513,6 +624,8 @@ def extract_text_from_alto(article_codes, page_info, issue_code):
                                     order_map)}
         page_info: Dictionary of parsed ALTO XML roots and their namespaces
         issue_code: Issue code identifier
+        issue_metadata: Dictionary of issue-level metadata from METS
+        alto_processing_info: Dictionary of ALTO processing software info
 
     Returns:
         Dictionary of articles with extracted text and layout info
@@ -539,7 +652,9 @@ def extract_text_from_alto(article_codes, page_info, issue_code):
         texts_dict[article_id] = combine_article_data(mets_title,
                                                       title_data,
                                                       content_data,
-                                                      non_text_elements)
+                                                      non_text_elements,
+                                                      issue_metadata,
+                                                      alto_processing_info)
 
     if skipped_articles > 0:
         logging.info(f"Issue {issue_code}: Extracted {len(texts_dict)} articles, skipped {skipped_articles} articles")
@@ -654,7 +769,8 @@ def process_content_blocks(text_block_ids, page_info, issue_code, order_map = No
     return content_data
 
 # %%
-def combine_article_data(mets_title, title_data, content_data, non_text_elements):
+def combine_article_data(mets_title, title_data, content_data, non_text_elements,
+                         issue_metadata, alto_processing_info):
     """
     Combine title and content data into a single article dictionary.
 
@@ -663,6 +779,8 @@ def combine_article_data(mets_title, title_data, content_data, non_text_elements
         title_data: Processed title data
         content_data: Processed content data
         non_text_elements: List of non-text element types (TABLE, IMAGE, etc.)
+        issue_metadata: Dictionary of issue-level metadata from METS
+        alto_processing_info: Dictionary of ALTO processing software info
 
     Returns:
         Combined article data
@@ -701,6 +819,15 @@ def combine_article_data(mets_title, title_data, content_data, non_text_elements
         content_data["block_line_counts"],
         content_data["block_style_refs"],
         non_text_elements,
+        issue_metadata["issue_label"],
+        issue_metadata["create_date"],
+        issue_metadata["last_mod_date"],
+        issue_metadata["language"],
+        issue_metadata["alternative_titles"],
+        alto_processing_info["preprocess_software"],
+        alto_processing_info["preprocess_version"],
+        alto_processing_info["ocr_software"],
+        alto_processing_info["ocr_version"],
     )
 
 # %%
@@ -777,6 +904,12 @@ def process_issue(args, input_paths, output_path, rev_date):
                 mets_text = tar.extractfile(mets_file).read()
                 article_codes = mets2codes_inner(mets_text, issue_code)
 
+                # Extract issue-level metadata from METS
+                parser = ET.XMLParser(remove_blank_text=True, recover=True)
+                mets_root_meta = ET.fromstring(mets_text, parser)
+                issue_metadata = extract_issue_metadata(mets_root_meta)
+                mets_root_meta.clear()
+
                 if len(article_codes) == 0:
                     logging.warning(f"No articles found in METS file for {issue_code}")
                     return issue_code, False, 0, 0, 0
@@ -794,7 +927,12 @@ def process_issue(args, input_paths, output_path, rev_date):
                     logging.error(f"Failed to parse ALTO files for {issue_code}")
                     return issue_code, False, 0, 0, 0
 
-                articles_with_text = extract_text_from_alto(article_codes, page_info, issue_code)
+                # Extract ALTO processing info from the first page
+                first_page_key = sorted(page_info.keys())[0]
+                alto_processing_info = extract_alto_processing_info(page_info[first_page_key][0])
+
+                articles_with_text = extract_text_from_alto(article_codes, page_info, issue_code,
+                                                            issue_metadata, alto_processing_info)
                 skipped_articles = total_articles_in_mets - len(articles_with_text)
 
                 if skipped_articles > 0:
@@ -832,6 +970,15 @@ def process_issue(args, input_paths, output_path, rev_date):
                         "block_line_counts",        # Dict mapping content block IDs to their line counts
                         "block_style_refs",         # Dict mapping content block IDs to their STYLEREFS
                         "non_text_elements",        # List of each non-text element found (including duplicates)
+                        "issue_label",              # Label from the root METS element
+                        "create_date",              # CREATEDATE from METS header
+                        "last_mod_date",            # LASTMODDATE from METS header
+                        "language",                 # Language code from METS bibliographic metadata
+                        "alternative_titles",       # List of alternative titles from METS
+                        "preprocess_software",      # Pre-processing software name from ALTO
+                        "preprocess_version",       # Pre-processing software version from ALTO
+                        "ocr_software",             # OCR software name from ALTO
+                        "ocr_version",              # OCR software version from ALTO
                     ]
                 )
 
@@ -892,14 +1039,19 @@ def batch_process_issues(issues, max_workers, input_paths, output_path, rev_date
                                     input_paths = input_paths,
                                     output_path = output_path,
                                     rev_date = rev_date)
-    results = []
 
-    with Pool(processes=max_workers) as pool:
-        results = list(tqdm(
-            pool.imap(process_issue_partial, issue_items),
-            total = len(issue_items),
-            desc = "Processing issues"
-        ))
+    if max_workers == 1 or len(issue_items) == 1:
+        # Single-process mode for small jobs or debugging
+        results = []
+        for item in tqdm(issue_items, desc="Processing issues"):
+            results.append(process_issue_partial(item))
+    else:
+        with Pool(processes=max_workers) as pool:
+            results = list(tqdm(
+                pool.imap(process_issue_partial, issue_items),
+                total = len(issue_items),
+                desc = "Processing issues"
+            ))
 
     successful = [r[0] for r in results if r[1]]
     failed = [r[0] for r in results if not r[1]]
