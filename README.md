@@ -139,6 +139,57 @@ output_directory/
 
 Each parquet file contains extracted article data for a single newspaper issue, and the summary JSON file contains statistics and issues for the processing run.
 
+### Note on dictionary columns
+
+The parquet files contain four dictionary columns (`block_line_counts`, `block_style_refs`, `title_block_line_counts`, `title_block_style_refs`) that map block IDs to their values. When reading these files back into pandas, you will see the dictionaries are expanded to include keys from all rows in the file and are padded with `None` for keys that don't belong to that article. This is expected behaviour and does not indicate missing data.
+
+To remove the `None`-padded entries, you can use the following helper function:
+
+```python
+def clean_parquet_dicts(df, columns=None):
+    """
+    Remove None-padded keys from dictionary columns in a Papers Past
+    METS/ALTO dataframe read from parquet format into pandas.
+
+    Parquet serialisation expands dictionary columns to include all keys
+    across rows, filling missing entries with None. This function strips
+    those None values so each row's dict contains only its own data.
+
+    Args:
+        df: pandas df read from a Papers Past parquet file created with 
+            the script in this repo.
+        columns: List of column names to clean. If None, defaults to
+                 the four dict columns: block_line_counts, block_style_refs,
+                 title_block_line_counts, title_block_style_refs
+
+    Returns:
+        Dataframe with cleaned dictionary columns
+    """
+    if columns is None:
+        columns = [
+            "block_line_counts",
+            "block_style_refs",
+            "title_block_line_counts",
+            "title_block_style_refs",
+        ]
+
+    df = df.copy()
+    for col in columns:
+        if col in df.columns:
+            df[col] = df[col].apply(
+                lambda d: {k: v for k, v in d.items() if v is not None}
+                if isinstance(d, dict) else d
+            )
+    return df
+```
+
+Usage:
+
+```python
+df = pd.read_parquet("PP_CHP_19031228_20250305.parquet")
+df = clean_parquet_dicts(df)
+```
+
 ## Acknowledgements
 
 This code is adapted from the work of [Joshua Wilson Black](https://github.com/JoshuaWilsonBlack/newspaper-philosophy-methods)
