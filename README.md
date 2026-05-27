@@ -192,6 +192,6 @@ df = clean_parquet_dicts(df)
 
 ## Acknowledgements
 
-This code is adapted from the work of [Joshua Wilson Black](https://github.com/JoshuaWilsonBlack/newspaper-philosophy-methods)
+The Papers Past article extraction code is adapted from the work of [Joshua Wilson Black](https://github.com/JoshuaWilsonBlack/newspaper-philosophy-methods)
 
 Wilson Black, J. (2023). Creating specialized corpora from digitized historical newspaper archives: An iterative bootstrapping approach. *Digital Scholarship in the Humanities, 38*(2), 779–797. [https://doi.org/10.1093/llc/fqac079](https://doi.org/10.1093/llc/fqac079)
