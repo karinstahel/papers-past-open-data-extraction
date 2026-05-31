@@ -141,29 +141,34 @@ Each parquet file contains extracted article data for a single newspaper issue, 
 
 ### Note on dictionary columns
 
-The parquet files contain four dictionary columns (`block_line_counts`, `block_style_refs`, `title_block_line_counts`, `title_block_style_refs`) that map block IDs to their values. When reading these files back into pandas, you will see the dictionaries are expanded to include keys from all rows in the file and are padded with `None` for keys that don't belong to that article. This is expected behaviour and does not indicate missing data.
+The parquet files contain four dictionary columns (`block_line_counts`, `block_style_refs`, `title_block_line_counts`, `title_block_style_refs`). Each maps the block IDs belonging to an article to a value: `block_line_counts` and `title_block_line_counts` map each block ID to its number of text lines, while `block_style_refs` and `title_block_style_refs` map each block ID to its `STYLEREFS` value.
 
-To remove the `None`-padded entries, you can use the following helper function:
+To keep memory usage low, these columns are stored as **JSON strings** rather than as native dictionaries. Writing them as native dictionaries causes parquet to store the column as a struct, expanding it to include the keys from every row in the file and padding each article with `None` for the keys that don't belong to it. That padding is very expensive in memory once the file is read back into pandas. The JSON-string format avoids this with each row holding only its own block IDs and values.
+
+To use the columns as dictionaries after reading a file, parse them back with `json.loads`. You can use the following helper function:
 
 ```python
-def clean_parquet_dicts(df, columns=None):
-    """
-    Remove None-padded keys from dictionary columns in a Papers Past
-    METS/ALTO dataframe read from parquet format into pandas.
+import json
 
-    Parquet serialisation expands dictionary columns to include all keys
-    across rows, filling missing entries with None. This function strips
-    those None values so each row's dict contains only its own data.
+
+def parse_parquet_dicts(df, columns=None):
+    """
+    Parse the JSON-string dictionary columns of a Papers Past METS/ALTO
+    dataframe (read from parquet into pandas) back into Python dictionaries.
+
+    The four dictionary columns are stored as JSON strings on disk to keep
+    memory usage low. This function parses them back into dictionaries, where
+    each row's dict contains only its own block IDs and values.
 
     Args:
-        df:         pandas df read from a Papers Past parquet file created with 
+        df:         pandas df read from a Papers Past parquet file created with
                     the script in this repo.
-        columns:    List of column names to clean. If None, defaults to
+        columns:    List of column names to parse. If None, defaults to
                     the four dict columns: block_line_counts, block_style_refs,
                     title_block_line_counts, title_block_style_refs
 
     Returns:
-        Dataframe with cleaned dictionary columns
+        Dataframe with the specified columns parsed into dictionaries
     """
     if columns is None:
         columns = [
@@ -177,8 +182,7 @@ def clean_parquet_dicts(df, columns=None):
     for col in columns:
         if col in df.columns:
             df[col] = df[col].apply(
-                lambda d: {k: v for k, v in d.items() if v is not None}
-                if isinstance(d, dict) else d
+                lambda s: json.loads(s) if isinstance(s, str) else s
             )
     return df
 ```
@@ -187,7 +191,19 @@ Usage:
 
 ```python
 df = pd.read_parquet("PP_CHP_19031228_20250305.parquet")
-df = clean_parquet_dicts(df)
+df = parse_parquet_dicts(df)
+```
+
+#### Recovering block IDs
+
+Earlier versions of these files included separate `block_ids` and `title_block_ids` columns. These have been removed because the same information is held in the dictionary keys. Because the IDs are stored as the dictionary keys and JSON preserves their order, you can recover the block ID lists after parsing if required:
+
+```python
+# Content block IDs for the first article, in reading order:
+content_block_ids = list(df.loc[0, "block_line_counts"].keys())
+
+# Title block IDs for the first article:
+title_block_ids = list(df.loc[0, "title_block_line_counts"].keys())
 ```
 
 ## Acknowledgements
