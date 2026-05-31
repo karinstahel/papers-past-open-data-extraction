@@ -1180,6 +1180,15 @@ def process_issue(args, input_paths, output_path, rev_date):
                     f"PP_{issue_code}_{rev_date}.parquet"
                 )
 
+                dict_cols = ["block_line_counts", "block_style_refs",
+                             "title_block_line_counts", "title_block_style_refs"]
+                
+                for col in dict_cols:
+                    df[col] = df[col].apply(
+                        lambda d: json.dumps(d, ensure_ascii=False) if isinstance(d, dict) else d)
+                
+                df = df.drop(columns=["block_ids", "title_block_ids"])
+                
                 df.to_parquet(output_file_path, engine = parquet_engine)
 
                 # Clear memory
