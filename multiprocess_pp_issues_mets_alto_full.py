@@ -1395,6 +1395,7 @@ def parse_arguments():
 def main():
     """Main function to run the Papers Past Open Data METS-ALTO extraction process."""
 
+    # TODO: Implement args to control which data is extracted e.g., only text and title, or all etc.
     args = parse_arguments()
 
     input_paths = args.input_paths
