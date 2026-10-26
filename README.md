@@ -2,14 +2,14 @@
 
 These Python scripts use multiprocessing to efficiently extract article data from the [National Library of New Zealand's Papers Past open data](https://natlib.govt.nz/about-us/open-data/papers-past-metadata/papers-past-newspaper-open-data-pilot/overview-papers-past-newspaper-open-data-pilot). The scripts process the archive files and save extracted article data by newspaper issue as pandas dataframes in parquet format with detailed error and completion logging. Each row in the dataframe is an article in that newspaper issue.
 
-There are two scripts, one for each format the open data is released in:
+There are two scripts, one for each open data format:
 
 | Script | Input | Extracts |
 |--------|-------|----------|
 | `multiprocess_pp_issues_mets_alto_full.py` | METS/ALTO XML (one tar.gz file per newspaper and year) | Article text plus detailed layout information (block and line positions, word confidences, page dimensions etc.) |
 | `multiprocess_pp_issues_json.py` | [JSON](https://natlib.govt.nz/about-us/open-data/papers-past-metadata/papers-past-newspaper-open-data-pilot/json-papers-past-newspaper-open-data) (one tar file per newspaper, released from June 2026) | Article text plus the Papers Past article ID, type, citation, author and rights metadata |
 
-The usage instructions below are for the METS/ALTO script. See [JSON extraction script](#json-extraction-script) for the differences when using the JSON script.
+See the section [JSON extraction script](#json-extraction-script) for details on how to use the JSON script. If you just want article text, titles, date, region, newspaper etc., the JSON data is recommended as the files are significantly smaller and quicker to download, and it is much faster to extract the data to parquet format than from the METS/ALTO XML. In addition, the OCR text for some articles in the JSON data has been corrected and may differ to the text for the same article in the METS/ALTO XML. 
 
 ## Features
 
@@ -18,7 +18,7 @@ The usage instructions below are for the METS/ALTO script. See [JSON extraction 
 - Processes multiple issues in parallel using multiprocessing
 - Provides detailed logging and statistics about the extraction process
 - Supports various input options (specific issues, newspaper codes, etc.)
-- Outputs data in parquet format
+- Outputs dataframes in parquet format for further processing and analysis with [pandas](https://pandas.pydata.org/docs/index.html) or [Polars](https://pola.rs/)
 
 ## Installation
 
