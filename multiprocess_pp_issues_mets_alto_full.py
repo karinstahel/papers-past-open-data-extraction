@@ -1501,7 +1501,7 @@ def main():
         print(f"See log file and summary JSON for details")
 
     print(f"Summary saved to {summary_path}")
-    print(f"Finished processing! 😊")
+    print(f"Finished processing!")
 
 if __name__ == "__main__":
     main()
